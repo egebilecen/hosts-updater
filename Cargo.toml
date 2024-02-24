@@ -1,0 +1,15 @@
+[package]
+name = "hosts-updt"
+description = "Auto hosts file updater based on connected network."
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+regex = "1.10.3"
+auto-launch = "0.5.0"
+futures = "0.3.30"
+async-std = "1.12.0"
+clokwerk = "0.4.0"
+serde = "1.0.197"
+config = { version = "0.14.0", features = ["toml"] }
+simple-log = "1.6.0"
