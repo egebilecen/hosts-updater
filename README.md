@@ -1,5 +1,6 @@
 This program automatically polls the currently connected network's SSID and updates the hosts file with matching entries (if any exist). If there are no matches, it clears the previous entry added to the hosts file (if that was the case). Upon execution of the program, a default config file (which is config.toml) will be created. The configuration is quite simple. Update the `hosts_path` value with the hosts file path if it is different in your system. Then add an SSID name under the `[ssid]` section.
 
+**Do NOT forget to run the program as administrator; otherwise, it won't be able to update the hosts file.**
 
 Default config:
 ```toml
