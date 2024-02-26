@@ -101,7 +101,7 @@ fn update_hosts() -> Result<(), Box<dyn Error>> {
             info!("Not connected to any network. Clearing the existing value(s).");
         } else {
             info!(
-                r#"No value found for the SSID "{}". Cleared the existing value(s)."#,
+                r#"No value found for the SSID "{}". Clearing the existing value(s)."#,
                 ssid
             );
         }
