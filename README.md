@@ -13,7 +13,7 @@ example = """
     192.168.1.1 example.com
 
 
-    # Redirect requests to example.com to 192.168.1.1.
+    # Redirect requests to sub.example.com to 192.168.1.2.
     192.168.1.2 sub.example.com
 """
 ```
