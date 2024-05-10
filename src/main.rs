@@ -1,8 +1,6 @@
 #![windows_subsystem = "windows"]
 mod wifi;
 
-#[cfg(not(debug_assertions))]
-use auto_launch::AutoLaunchBuilder;
 use clokwerk::{AsyncScheduler, TimeUnits};
 use config::{Config, File};
 use futures::executor;
@@ -10,9 +8,16 @@ use simple_log::{error, warn, LogConfigBuilder};
 use simple_log::{info, log_level};
 use std::fs;
 use std::path::Path;
+use std::process::ExitCode;
 use std::time::Duration;
 use std::{env, error::Error};
 use wifi::info::get_ssid;
+
+#[cfg(not(debug_assertions))]
+use special_folder::SpecialFolder;
+
+#[cfg(not(debug_assertions))]
+use mslnk::ShellLink;
 
 const CHECK_INTERVAL_SEC: u32 = 10;
 
@@ -32,6 +37,23 @@ example = """
     192.168.1.2 sub.example.com
 """
 "#;
+
+#[cfg(not(debug_assertions))]
+fn add_to_startup(display_name: &str, path: &str) -> Result<(), Box<dyn Error>> {
+    let startup_path = SpecialFolder::Startup.get().unwrap_or("".into());
+
+    if startup_path.as_os_str().is_empty() {
+        return Err("Couldn't get the startup path.".into());
+    }
+
+    let shortcut = ShellLink::new(path)?;
+
+    if let Err(err) = shortcut.create_lnk(startup_path.join(format!("{}.lnk", display_name))) {
+        Err(err.into())
+    } else {
+        Ok(())
+    }
+}
 
 fn update_hosts() -> Result<(), Box<dyn Error>> {
     let ssid = get_ssid().unwrap_or("".into());
@@ -116,7 +138,7 @@ fn log_error(f: fn() -> Result<(), Box<dyn Error>>) {
     };
 }
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn _main() -> Result<(), Box<dyn Error>> {
     simple_log::new(
         LogConfigBuilder::builder()
             .path("logs.txt")
@@ -149,20 +171,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let bin_path = bin_path.to_str().unwrap_or("");
 
         if !bin_path.is_empty() {
-            let args: [&str; 0] = [];
-            let auto = AutoLaunchBuilder::new()
-                .set_app_name(env!("CARGO_PKG_NAME"))
-                .set_app_path(bin_path)
-                .set_args(&args)
-                .set_use_launch_agent(true)
-                .build()?;
-
-            if let Err(err) = auto.enable() {
-                error!(
-                    "Error occured while setting the file as auto launch: {}",
-                    err
-                );
-            }
+            add_to_startup("Hosts Updater", bin_path)?;
         } else {
             error!("Binary path is empty. Couldn't set the file as auto launch.");
         }
@@ -188,4 +197,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     });
 
     Ok(())
+}
+
+fn main() -> ExitCode {
+    if let Err(err) = _main() {
+        error!("{}", err.to_string());
+        return 1.into();
+    }
+
+    0.into()
 }
